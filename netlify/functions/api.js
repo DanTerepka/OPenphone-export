@@ -1,7 +1,7 @@
 // Netlify Function - API Proxy with Rate Limit Handling
 const fetch = require('node-fetch');
 
-const API_KEY = process.env.OPENPHONE_API_KEY || '8Gu6WJMEwJAXakmTnA5qtKnr8jDPvI27';
+const API_KEY = process.env.OPENPHONE_API_KEY;
 const BASE_URL = 'https://api.openphone.com/v1';
 
 // Rate limit tracking
@@ -94,6 +94,17 @@ exports.handler = async (event, context) => {
       statusCode: 200,
       headers,
       body: ''
+    };
+  }
+
+  // Check for API key
+  if (!API_KEY) {
+    return {
+      statusCode: 401,
+      headers,
+      body: JSON.stringify({
+        error: 'OPENPHONE_API_KEY environment variable is not set. Please configure it in Netlify.'
+      })
     };
   }
 
