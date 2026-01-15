@@ -126,7 +126,7 @@ exports.handler = async (event, context) => {
     const response = await fetchWithRetry(url.toString(), {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': API_KEY,
         'Content-Type': 'application/json'
       }
     });
