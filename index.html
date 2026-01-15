@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenPhone Contact Export</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            background: white;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            padding-right: 40px;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        select:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 10px;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .status.info {
+            background: #e3f2fd;
+            color: #1565c0;
+            border-left: 4px solid #1565c0;
+        }
+        
+        .status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid #2e7d32;
+        }
+        
+        .status.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+        
+        .status.show {
+            display: block;
+        }
+        
+        .progress {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .progress.show {
+            display: block;
+        }
+        
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+            font-weight: 600;
+        }
+        
+        .download-section {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .download-section h3 {
+            font-size: 16px;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+        
+        .download-btn {
+            display: block;
+            padding: 12px 20px;
+            background: white;
+            color: #667eea;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 2px solid #667eea;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .download-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .download-btn:last-child {
+            margin-bottom: 0;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ðŸ“ž OpenPhone Export</h1>
+        <p class="subtitle">Export all messages and calls for any contact</p>
+        
+        <div class="form-group">
+            <label for="phoneNumber">Your Phone Number</label>
+            <select id="phoneNumber" disabled>
+                <option value="">Loading phone numbers...</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="contact">Select Contact</label>
+            <select id="contact" disabled>
+                <option value="">First select a phone number</option>
+            </select>
+        </div>
+        
+        <button id="exportBtn" disabled>
+            Export Messages & Calls
+        </button>
+        
+        <div id="status" class="status"></div>
+        
+        <div id="progress" class="progress">
+            <div class="progress-text">Exporting data...</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+        
+        <div id="stats" class="stats" style="display: none;">
+            <div class="stat-card">
+                <div class="stat-number" id="messageCount">0</div>
+                <div class="stat-label">Messages</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="callCount">0</div>
+                <div class="stat-label">Calls</div>
+            </div>
+        </div>
+        
+        <div id="downloadSection" class="download-section" style="display: none;">
+            <h3>ðŸ“¥ Download Your Files</h3>
+            <button class="download-btn" id="downloadAll">ðŸ“¦ Download All Files (ZIP)</button>
+            <button class="download-btn" id="downloadJson">ðŸ“„ Download JSON</button>
+            <button class="download-btn" id="downloadMessages">ðŸ’¬ Download Messages CSV</button>
+            <button class="download-btn" id="downloadCalls">ðŸ“ž Download Calls CSV</button>
+        </div>
+        
+        <div class="footer">
+            Made with â¤ï¸ for easy OpenPhone exports
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script>
+        // DOM Elements
+        const phoneNumberSelect = document.getElementById('phoneNumber');
+        const contactSelect = document.getElementById('contact');
+        const exportBtn = document.getElementById('exportBtn');
+        const statusDiv = document.getElementById('status');
+        const progressDiv = document.getElementById('progress');
+        const progressFill = document.getElementById('progressFill');
+        const statsDiv = document.getElementById('stats');
+        const messageCountEl = document.getElementById('messageCount');
+        const callCountEl = document.getElementById('callCount');
+        const downloadSection = document.getElementById('downloadSection');
+        
+        let exportData = null;
+        let contactName = '';
+        
+        function showStatus(message, type = 'info') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type} show`;
+        }
+        
+        function showProgress(percent) {
+            progressDiv.classList.add('show');
+            progressFill.style.width = Math.min(100, percent) + '%';
+        }
+        
+        function hideProgress() {
+            progressDiv.classList.remove('show');
+            progressFill.style.width = '0%';
+        }
+        
+        // Rate limit throttle
+        let lastRequestTime = 0;
+        const MIN_REQUEST_INTERVAL = 150; // ms between requests
+        
+        async function throttleRequest() {
+            const now = Date.now();
+            const timeSinceLastRequest = now - lastRequestTime;
+            if (timeSinceLastRequest < MIN_REQUEST_INTERVAL) {
+                await new Promise(resolve => 
+                    setTimeout(resolve, MIN_REQUEST_INTERVAL - timeSinceLastRequest)
+                );
+            }
+            lastRequestTime = Date.now();
+        }
+        
+        // Call Netlify Function with rate limit handling
+        async function apiCall(endpoint, params = {}, retryCount = 0) {
+            try {
+                // Throttle requests to avoid rate limits
+                await throttleRequest();
+                
+                params.endpoint = endpoint;
+                const url = new URL('/.netlify/functions/api', window.location.origin);
+                Object.keys(params).forEach(key => {
+                    if (params[key] !== null && params[key] !== undefined) {
+                        url.searchParams.append(key, params[key]);
+                    }
+                });
+                
+                const response = await fetch(url);
+                
+                // Handle rate limiting (429)
+                if (response.status === 429) {
+                    const retryAfter = parseInt(response.headers.get('retry-after') || '1');
+                    const waitTime = Math.min(retryAfter * 1000 * Math.pow(2, retryCount), 30000);
+                    
+                    if (retryCount < 3) {
+                        console.log(`Rate limited. Retrying in ${waitTime}ms...`);
+                        showStatus(`Rate limited. Retrying in ${Math.ceil(waitTime / 1000)}s...`, 'info');
+                        await new Promise(resolve => setTimeout(resolve, waitTime));
+                        return apiCall(endpoint, params, retryCount + 1);
+                    } else {
+                        throw new Error('Rate limit exceeded. Please try again in a few moments.');
+                    }
+                }
+                
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    const errorMsg = error.error || error.message || `HTTP ${response.status}`;
+                    
+                    // Provide helpful context for common errors
+                    if (response.status === 401 || response.status === 403) {
+                        throw new Error(`Authentication failed: ${errorMsg}. Please check your API key.`);
+                    } else if (response.status === 404) {
+                        throw new Error(`Endpoint not found: ${errorMsg}. Netlify function may not be deployed.`);
+                    } else if (response.status === 400) {
+                        throw new Error(`Invalid request: ${errorMsg}`);
+                    } else if (response.status >= 500) {
+                        // Retry server errors
+                        if (retryCount < 3) {
+                            const waitTime = Math.pow(2, retryCount) * 1000;
+                            console.log(`Server error. Retrying in ${waitTime}ms...`);
+                            await new Promise(resolve => setTimeout(resolve, waitTime));
+                            return apiCall(endpoint, params, retryCount + 1);
+                        }
+                    }
+                    
+                    throw new Error(`API Error (${response.status}): ${errorMsg}`);
+                }
+                
+                return response.json();
+            } catch (error) {
+                throw error;
+            }
+        }
+        
+        async function loadPhoneNumbers() {
+            try {
+                showStatus('Loading your phone numbers...', 'info');
+                const data = await apiCall('/phone-numbers');
+                const phones = data.data || [];
+                
+                phoneNumberSelect.innerHTML = '<option value="">Select a phone number</option>';
+                phones.forEach(phone => {
+                    const option = document.createElement('option');
+                    option.value = phone.id;
+                    const name = phone.name ? ` (${phone.name})` : '';
+                    option.textContent = `${phone.formattedNumber || phone.number}${name}`;
+                    phoneNumberSelect.appendChild(option);
+                });
+                
+                phoneNumberSelect.disabled = false;
+                showStatus(`Loaded ${phones.length} phone number(s)`, 'success');
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        async function loadContacts() {
+            const phoneNumberId = phoneNumberSelect.value;
+            if (!phoneNumberId) return;
+            
+            try {
+                contactSelect.disabled = true;
+                contactSelect.innerHTML = '<option value="">Loading contacts...</option>';
+                exportBtn.disabled = true;
+                showStatus('Loading contacts...', 'info');
+                
+                let allContacts = [];
+                let pageToken = null;
+                
+                do {
+                    const params = { 
+                        maxResults: 50  // API maximum is 50 for contacts endpoint
+                    };
+                    if (pageToken) params.pageToken = pageToken;
+                    
+                    const data = await apiCall('/contacts', params);
+                    allContacts = allContacts.concat(data.data || []);
+                    pageToken = data.nextPageToken;
+                } while (pageToken);
+                
+                const contactsList = [];
+                allContacts.forEach(contact => {
+                    const phones = contact.phoneNumbers || [];
+                    phones.forEach(phone => {
+                        const firstName = contact.firstName || '';
+                        const lastName = contact.lastName || '';
+                        const company = contact.company || '';
+                        const name = `${firstName} ${lastName}`.trim() || company || 'Unknown';
+                        contactsList.push({ name, phone });
+                    });
+                });
+                
+                contactSelect.innerHTML = '<option value="">Select a contact</option>';
+                contactsList.forEach(contact => {
+                    const option = document.createElement('option');
+                    option.value = contact.phone;
+                    option.dataset.name = contact.name;
+                    option.textContent = `${contact.name} - ${contact.phone}`;
+                    contactSelect.appendChild(option);
+                });
+                
+                contactSelect.disabled = false;
+                exportBtn.disabled = false;
+                showStatus(`Loaded ${contactsList.length} contact(s)`, 'success');
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+                contactSelect.innerHTML = '<option value="">Error loading contacts</option>';
+                contactSelect.disabled = true;
+                exportBtn.disabled = true;
+                showStatus(`Failed to load contacts: ${error.message}`, 'error');
+            }
+        }
+        
+        async function fetchAllMessages(phoneNumberId, participantNumber) {
+            let allMessages = [];
+            let pageToken = null;
+            
+            do {
+                const params = {
+                    phoneNumberId: phoneNumberId,
+                    participants: participantNumber,
+                    maxResults: 100
+                };
+                if (pageToken) params.pageToken = pageToken;
+                
+                const data = await apiCall('/messages', params);
+                allMessages = allMessages.concat(data.data || []);
+                pageToken = data.nextPageToken;
+                showProgress(25 + (allMessages.length / 10));
+            } while (pageToken);
+            
+            return allMessages;
+        }
+        
+        async function fetchAllCalls(phoneNumberId, participantNumber) {
+            let allCalls = [];
+            let pageToken = null;
+            
+            do {
+                const params = {
+                    phoneNumberId: phoneNumberId,
+                    participants: participantNumber,
+                    maxResults: 100
+                };
+                if (pageToken) params.pageToken = pageToken;
+                
+                const data = await apiCall('/calls', params);
+                allCalls = allCalls.concat(data.data || []);
+                pageToken = data.nextPageToken;
+                showProgress(60 + (allCalls.length / 10));
+            } while (pageToken);
+            
+            return allCalls;
+        }
+        
+        function arrayToCSV(data, headers) {
+            if (!data || data.length === 0) return '';
+            const escapeCSV = (str) => {
+                if (str === null || str === undefined) return '';
+                str = String(str);
+                if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+                    return '"' + str.replace(/"/g, '""') + '"';
+                }
+                return str;
+            };
+            let csv = headers.join(',') + '\n';
+            data.forEach(row => {
+                csv += row.map(escapeCSV).join(',') + '\n';
+            });
+            return csv;
+        }
+        
+        function createMessagesCSV(messages) {
+            const headers = ['Direction', 'From', 'To', 'Text', 'Status', 'Created At', 'Updated At'];
+            const rows = messages.map(msg => [
+                msg.direction || '', msg.from || '', (msg.to || []).join('; '),
+                msg.text || '', msg.status || '', msg.createdAt || '', msg.updatedAt || ''
+            ]);
+            return arrayToCSV(rows, headers);
+        }
+        
+        function createCallsCSV(calls) {
+            const headers = ['Direction', 'Status', 'Duration (sec)', 'Answered At', 'Completed At', 'Created At', 'Participants'];
+            const rows = calls.map(call => [
+                call.direction || '', call.status || '', call.duration || 0,
+                call.answeredAt || '', call.completedAt || '', call.createdAt || '',
+                (call.participants || []).join('; ')
+            ]);
+            return arrayToCSV(rows, headers);
+        }
+        
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type: type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        async function downloadAllAsZip() {
+            if (!exportData) return;
+            try {
+                showStatus('Creating ZIP file...', 'info');
+                const zip = new JSZip();
+                const timestamp = new Date().toISOString().split('T')[0];
+                const safeName = contactName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                
+                const jsonContent = JSON.stringify({
+                    contact: { name: contactName, phone: exportData.contactPhone },
+                    exported_at: new Date().toISOString(),
+                    messages: exportData.messages,
+                    calls: exportData.calls
+                }, null, 2);
+                zip.file(`${safeName}_export_${timestamp}.json`, jsonContent);
+                
+                if (exportData.messages.length > 0) {
+                    zip.file(`${safeName}_messages_${timestamp}.csv`, createMessagesCSV(exportData.messages));
+                }
+                if (exportData.calls.length > 0) {
+                    zip.file(`${safeName}_calls_${timestamp}.csv`, createCallsCSV(exportData.calls));
+                }
+                
+                const zipBlob = await zip.generateAsync({ type: 'blob' });
+                downloadFile(zipBlob, `${safeName}_export_${timestamp}.zip`, 'application/zip');
+                showStatus('ZIP file downloaded!', 'success');
+            } catch (error) {
+                showStatus(`Error creating ZIP: ${error.message}`, 'error');
+            }
+        }
+        
+        async function exportContact() {
+            const phoneNumberId = phoneNumberSelect.value;
+            const contactPhone = contactSelect.value;
+            contactName = contactSelect.options[contactSelect.selectedIndex].dataset.name;
+            
+            if (!phoneNumberId || !contactPhone) {
+                if (!phoneNumberId) {
+                    showStatus('Error: Please select a phone number first', 'error');
+                } else if (!contactPhone) {
+                    showStatus('Error: Please select a contact. If contacts are not loading, check the browser console for errors.', 'error');
+                }
+                return;
+            }
+            
+            try {
+                exportBtn.disabled = true;
+                exportBtn.innerHTML = 'Exporting... <span class="spinner"></span>';
+                statsDiv.style.display = 'none';
+                downloadSection.style.display = 'none';
+                showProgress(10);
+                
+                showStatus('Fetching messages...', 'info');
+                const messages = await fetchAllMessages(phoneNumberId, contactPhone);
+                
+                showStatus('Fetching calls...', 'info');
+                const calls = await fetchAllCalls(phoneNumberId, contactPhone);
+                
+                showProgress(100);
+                
+                exportData = { contactPhone, messages, calls };
+                messageCountEl.textContent = messages.length;
+                callCountEl.textContent = calls.length;
+                
+                statsDiv.style.display = 'grid';
+                downloadSection.style.display = 'block';
+                hideProgress();
+                showStatus(`âœ… Exported ${messages.length} messages and ${calls.length} calls!`, 'success');
+            } catch (error) {
+                hideProgress();
+                showStatus(`Export failed: ${error.message}`, 'error');
+            } finally {
+                exportBtn.disabled = false;
+                exportBtn.textContent = 'Export Messages & Calls';
+            }
+        }
+        
+        document.getElementById('downloadAll').addEventListener('click', downloadAllAsZip);
+        document.getElementById('downloadJson').addEventListener('click', () => {
+            if (!exportData) return;
+            const timestamp = new Date().toISOString().split('T')[0];
+            const safeName = contactName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            const content = JSON.stringify({
+                contact: { name: contactName, phone: exportData.contactPhone },
+                exported_at: new Date().toISOString(),
+                messages: exportData.messages,
+                calls: exportData.calls
+            }, null, 2);
+            downloadFile(content, `${safeName}_export_${timestamp}.json`, 'application/json');
+        });
+        document.getElementById('downloadMessages').addEventListener('click', () => {
+            if (!exportData || exportData.messages.length === 0) return;
+            const timestamp = new Date().toISOString().split('T')[0];
+            const safeName = contactName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            downloadFile(createMessagesCSV(exportData.messages), `${safeName}_messages_${timestamp}.csv`, 'text/csv');
+        });
+        document.getElementById('downloadCalls').addEventListener('click', () => {
+            if (!exportData || exportData.calls.length === 0) return;
+            const timestamp = new Date().toISOString().split('T')[0];
+            const safeName = contactName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            downloadFile(createCallsCSV(exportData.calls), `${safeName}_calls_${timestamp}.csv`, 'text/csv');
+        });
+        
+        phoneNumberSelect.addEventListener('change', loadContacts);
+        exportBtn.addEventListener('click', exportContact);
+        loadPhoneNumbers();
+    </script>
+</body>
+</html>

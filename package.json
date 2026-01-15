@@ -1,0 +1,8 @@
+{
+  "name": "openphone-export-netlify",
+  "version": "1.0.0",
+  "description": "OpenPhone contact export tool with Netlify Functions",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
